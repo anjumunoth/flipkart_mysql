@@ -1,0 +1,589 @@
+select collist
+from tablename
+where condition
+group by column(s)
+having clause 
+order by column(s)
+
+
+Joins: 
+1. Inner join
+2. Outer join : left outer join, right outer join, full outer join
+3. Cartesian product
+4. Self join
+
+Joins 
+-- costly affair(memory ,cpu )
+
+Inner join: Matched rows in the 2 tables
+Left outer join : Matched rows in the 2 tables and unmatched rows in the left table
+Right outer join : Matched rows in the 2 tables and unmatched rows in the right table
+
+Full Outer join : Matched rows in the 2 tables and unmatched rows in the left table and unmatched rows in the right table
+
+Cartesian product : For each row in left table, it will match it with all the rows in the right table
+-- Avoided
+
+Self join: Joining with table itself
+
+select * from employees, job_history
+
+
+Order by 
+-- Column name
+-- Generated field
+-- Column number (select clause)
+
+
+No secondary indexes on employees table
+
+select * from employees where department_id=10;
+Complete table scan
+
+Create a secondary index on department_id field
+BTREE index :
+Get the distinct values of department_id -- create a binary tree
+
+
+/* select#1 */ select `flipkart`.`employees`.`EMPLOYEE_ID` AS `EMPLOYEE_ID`,`flipkart`.`employees`.`FIRST_NAME` AS `FIRST_NAME`,`flipkart`.`employees`.`LAST_NAME` AS `LAST_NAME`,`flipkart`.`employees`.`EMAIL` AS `EMAIL`,`flipkart`.`employees`.`PHONE_NUMBER` AS `PHONE_NUMBER`,`flipkart`.`employees`.`HIRE_DATE` AS `HIRE_DATE`,`flipkart`.`employees`.`JOB_ID` AS `JOB_ID`,`flipkart`.`employees`.`SALARY` AS `SALARY`,`flipkart`.`employees`.`COMMISSION_PCT` AS `COMMISSION_PCT`,`flipkart`.`employees`.`MANAGER_ID` AS `MANAGER_ID`,`flipkart`.`employees`.`DEPARTMENT_ID` AS `DEPARTMENT_ID` from `flipkart`.`employees` where (`flipkart`.`employees`.`LAST_NAME` like 'w%') order by `flipkart`.`employees`.`LAST_NAME`
+
+
+EmpNames and their respective department names 
+
+Akash
+select EMPLOYEE_ID , FIRST_NAME , LAST_NAME,DEPARTMENT_NAME from employees inner join departments on employees.DEPARTMENT_ID = departments.DEPARTMENT_ID;
+
+Amit
+select a.`FIRST_NAME`, a.`LAST_NAME`, b.`DEPARTMENT_NAME` from employees a INNER JOIN departments b where a.`DEPARTMENT_ID`=b.`DEPARTMENT_ID`;
+
+Meet
+SELECT employees.EMPLOYEE_ID, employees.FIRST_NAME, employees.LAST_NAME, departments.DEPARTMENT_NAME FROM employees INNER JOIN departments ON employees.DEPARTMENT_ID = departments.DEPARTMENT_ID;
+
+Satyajeet:
+select employees.FIRST_NAME, departments.DEPARTMENT_NAME from employees inner join departments on employees.DEPARTMENT_ID = departments.DEPARTMENT_ID;
+
+Mansi:
+select emp.FIRST_NAME, emp.LAST_NAME, dep.DEPARTMENT_NAME from employees emp INNER JOIN departments dep where emp.DEPARTMENT_ID=dep.DEPARTMENT_ID;
+
+Pragyan:
+SELECT employees.`EMPLOYEE_ID`,employees.`FIRST_NAME`,employees.`LAST_NAME`, departments.`DEPARTMENT_NAME` FROM employees INNER JOIN departments ON employees.`DEPARTMENT_ID` = departments.`DEPARTMENT_ID`;
+
+Mohit
+select employees.first_name, employees.last_name,department_name from departments inner join employees on departments.DEPARTMENT_ID=employees.DEPARTMENT_ID;
+
+
+EmployeeId and names of the employees and count of the different jobs which they have done
+
+Meet:
+SELECT employees.EMPLOYEE_ID, employees.FIRST_NAME, employees.LAST_NAME, count(*) as job_count from employees inner join job_history ON employees.EMPLOYEE_ID = job_history.EMPLOYEE_ID GROUP BY employees.EMPLOYEE_ID;
+
+Akash:
+select job_history.EMPLOYEE_ID, FIRST_NAME , LAST_NAME, count(*) as no_of_jobs from employees inner join job_history on employees.EMPLOYEE_ID = job_history.EMPLOYEE_ID group by job_history.`EMPLOYEE_ID`;
+
+Mansi:
+SELECT employees.EMPLOYEE_ID, employees.FIRST_NAME, count(*) as emp_job_count from employees inner join job_history ON employees.EMPLOYEE_ID = job_history.EMPLOYEE_ID GROUP BY employees.EMPLOYEE_ID;
+
+Satyajeet:
+select employees.FIRST_NAME, count(*) as jobs from employees inner join job_history on employees.JOB_ID = job_history.JOB_ID group by employees.EMPLOYEE_ID;
+
+Amit
+select a.`EMPLOYEE_ID`, b.`FIRST_NAME` ,count(*) as countJobs from `job_history` a INNER JOIN employees b ON a.`EMPLOYEE_ID` = b.`EMPLOYEE_ID` group by a.`EMPLOYEE_ID`;
+
+Alokit
+select employees.EMPLOYEE_ID,employees.FIRST_NAME,employees.LAST_NAME,count(*) from employees inner join job_history where employees.JOB_ID=job_history.JOB_ID group by employees.EMPLOYEE_ID;
+
+Pragyan:
+SELECT employees.FIRST_NAME, count(*) as no_of_jobs from employees inner join job_history on employees.JOB_ID = job_history.JOB_ID group by employees.EMPLOYEE_ID; 
+
+
+For each region , get the number of locations:
+
+
+Mohit:
+select regions.REGION_ID, count(*) from regions inner join countries inner join locations on regions.REGION_ID = countries.REGION_ID and countries.COUNTRY_ID = locations.COUNTRY_ID group by region_id;
+
+Amit:
+select a.`REGION_ID`, a.`REGION_NAME`, count(*) as count_loc from `regions` a INNER JOIN `countries` b INNER JOIN `locations` c ON a.`REGION_ID` = b.`REGION_ID` AND b.`COUNTRY_ID`=c.`COUNTRY_ID` group by a.`REGION_ID`;
+
+Satyajeet:
+select regions.REGION_NAME, locations.LOCATION_ID from regions join countries on regions.REGION_ID = countries.REGION_ID Join locations on countries.COUNTRY_ID= locations.COUNTRY_ID;
+
+Meet:
+SELECT r.REGION_ID, r.REGION_NAME, count(*) AS location_count FROM locations l JOIN countries c ON l.COUNTRY_ID = c.COUNTRY_ID JOIN regions r ON r.REGION_ID = c.REGION_ID GROUP BY r.REGION_ID ORDER BY location_count DESC;
+
+mansi:
+select REGION_NAME, count(*) as location_count from regions inner join countries on regions.REGION_ID = countries.REGION_ID inner join locations on countries.COUNTRY_ID=locations.COUNTRY_ID group by regions.REGION_ID;
+
+parth:
+select count(l.city),r.REGION_NAME from regions as r, locations as l, countries as c where c.REGION_ID = r.REGION_ID and c.COUNTRY_ID = l.COUNTRY_ID group by r.REGION_NAME
+
+Saiteja:
+SELECT region_name, sum(count_of_locations) FROM regions INNER JOIN
+(SELECT country_name, region_id, count(*) as count_of_locations FROM countries INNER JOIN locations ON countries.country_id = locations.country_id GROUP BY country_name, region_id) as country_count
+ON country_count.region_id = regions.region_id GROUP BY region_name;
+
+Department Name and number of employees working in it:
+
+Amit:
+Select d.`DEPARTMENT_NAME`, count(*) as count_employee from departments d INNER JOIN employees e ON d.`DEPARTMENT_ID` = e.`DEPARTMENT_ID` group by d.`DEPARTMENT_NAME`;
+
+Satyajeet:
+select departments.`DEPARTMENT_NAME`, count(*) as total_employees from departments Satyajeetjoin employees on departments.DEPARTMENT_ID = employees.DEPARTMENT_ID group by departments.DEPARTMENT_ID;
+
+Akash:
+select employees.DEPARTMENT_ID , DEPARTMENT_NAME , count(*) as employee_count from employees inner join departments on employees.DEPARTMENT_ID = departments.DEPARTMENT_ID group by employees.DEPARTMENT_ID;
+
+Meet:
+SELECT d.DEPARTMENT_ID, d.DEPARTMENT_NAME, count(*) as employee_count FROM employees e JOIN departments d ON e.DEPARTMENT_ID = d.DEPARTMENT_ID GROUP BY d.DEPARTMENT_ID order by employee_count desc;
+
+parth:
+select dep.DEPARTMENT_NAME,count(emp.EMPLOYEE_ID) from flipkart.employees as emp, flipkart.departments as dep where emp.DEPARTMENT_ID = dep.DEPARTMENT_ID group by dep.DEPARTMENT_ID 
+
+mansi:
+SELECT d.DEPARTMENT_ID, d.DEPARTMENT_NAME, count(*) as employee_count FROM employees e JOIN departments d ON e.DEPARTMENT_ID = d.DEPARTMENT_ID GROUP BY d.DEPARTMENT_ID order by employee_count desc;
+
+Pragyan:
+select d.DEPARTMENT_NAME, count(*) as count from departments d JOIN employees e ON d.DEPARTMENT_ID = e.DEPARTMENT_ID group by d.DEPARTMENT_ID;
+
+Nishant 
+Select departments.DEPARTMENT_ID, count(*) FROM employees INNER JOIN departments on employees.DEPARTMENT_ID = departments.DEPARTMENT_ID group by departments.DEPARTMENT_ID;
+Alokit
+select b.EMPLOYEE_ID,count(*) from departments a inner join employees b on a.DEPARTMENT_ID = b.DEPARTMENT_ID group by a.DEPARTMENT_ID;
+
+Job titles and if any employees working in them
+Employees and their previous jobs if present
+Left outer join : Matched records and unmatched records in the left table
+select * from employees left outer join job_history on job_history.JOB_ID=employees.JOB_ID;
+
+
+All the Department names and employees working under them
+
+
+Satyajeet: 
+select d.DEPARTMENT_NAME, e.FIRST_NAME from departments d 
+left outer join employees e on
+d.DEPARTMENT_ID = e.DEPARTMENT_ID;
+
+Pragyan:
+select d.DEPARTMENT_NAME, e.EMPLOYEE_ID from departments d LEFT OUTER JOIN employees e ON d.DEPARTMENT_ID = e.DEPARTMENT_ID;
+
+
+Akash:
+select departments.DEPARTMENT_NAME , departments.DEPARTMENT_ID , employees.FIRST_NAME,employees.EMPLOYEE_ID from employees 
+right outer join departments on employees.DEPARTMENT_ID = departments.DEPARTMENT_ID order by departments.DEPARTMENT_NAME ;
+
+Mohit:
+select departments.DEPARTMENT_NAME, employees.FIRST_NAME from departments left outer join employees  on employees.DEPARTMENT_ID = departments.DEPARTMENT_ID;
+
+parth:
+select dep.DEPARTMENT_NAME,emp.FIRST_NAME from flipkart.departments as dep  right outer join flipkart.employees as emp  on dep.DEPARTMENT_ID = emp.DEPARTMENT_ID
+
+Meet:
+SELECT d.DEPARTMENT_ID, d.DEPARTMENT_NAME, e.EMPLOYEE_ID, e.FIRST_NAME, e.LAST_NAME FROM departments d LEFT JOIN employees e ON d.DEPARTMENT_ID = e.DEPARTMENT_ID;
+
+Self join : 
+Employee names and thier respective manager names
+select e1.first_name as empName, e2.first_name as ManagerName from employees e1 , employees e2 where e1.manager_id=e2.employee_id
+
+
+Department Name of the employee(s) who has got the highest salary
+
+
+parth:
+select max(e1.SALARY),dep.DEPARTMENT_NAME from flipkart.employees as e1, flipkart.departments as dep where e1.DEPARTMENT_ID = dep.DEPARTMENT_ID
+select dep.DEPARTMENT_NAME from flipkart.employees as e1, flipkart.departments as dep where e1.DEPARTMENT_ID = dep.DEPARTMENT_ID having max(e1.SALARY)
+
+Akash:
+select employees.EMPLOYEE_ID, max(salary),departments.DEPARTMENT_NAME from employees inner join departments on employees.DEPARTMENT_ID = departments.DEPARTMENT_ID;
+select * from employees where salary > (select avg(salary) from employees);
+select * from employees where salary > (select avg(salary) from employees where DEPARTMENT_ID = 20);
+
+mansi:
+select max(salary) as max_salary, d.DEPARTMENT_NAME  from employees e inner Join departments d on e.DEPARTMENT_ID = d.DEPARTMENT_ID;
+
+Using subqueries:
+select department_name from departments where department_id =(select department_id where salary =(select max(salary) from employees));
+
+explain select EMPLOYEE_ID, DEPARTMENT_NAME from employees, departments where employees.DEPARTMENT_ID = departments.DEPARTMENT_ID and employees.SALARY = (select  max(salary) from employees);
+
+SubQueries :
+1. Single row single column subqueries
+2. Single row multiple column subqueries
+3. Multiple row single column subqueries
+4. Multiple row multiple column subqueries
+5. Correlated subquery
+
+-- Inner query is executed first and only once
+-- Based on the result of inner query, the outer query is executed
+-- 
+
+Single row single column subqueries 
+-- Inner query can return max 1 row and only 1 column
+-- Outer query can return multiple rows and multiple columns
+-- Operators : = < <= > >= !=
+select * from departments where department_id = (select department_id from employees where employee_id=100)
+
+Single row multiple column subqueries 
+-- Inner query can return max 1 row and multiple column
+-- Outer query can return multiple rows and multiple columns
+-- Operators : = != 
+select * from departments where (department_id,manager_id)=(select department_id,manager_id from employees where employee_id=100)
+
+Multiple row single column subqueries 
+-- Inner query can return many rows and only 1 column
+-- Outer query can return multiple rows and multiple columns
+-- Operators : in, = any >any >=any <any <=any >all <all <=all >=all
+
+1. Employee who have a got a salary greater any of the salaries of employees belonging to department 10
+select * from employees where salary > any (select salary from employees where department_id =10)
+
+select * from employees where salary > all (select salary from employees where department_id =10)
+
+Multiple row multile column subqueries 
+-- Inner query can return many rows and multiple column
+-- Outer query can return multiple rows and multiple columns
+-- Operators : in, = any =all
+
+select * from departments where (manager_id,department_id) in (select manager_id,department_id from employees where salary > 5000)
+
+
+1. All the employees who have a salary greater than the salary of employee with employee_id 104
+Akash
+select * from employees where salary > (select salary from employees where EMPLOYEE_ID = 104);
+select * from employees where salary > (select avg(salary) from employees);
+select * from employees where salary > (select avg(salary) from employees where DEPARTMENT_ID = 20);
+
+Satyajeet
+select employees.EMPLOYEE_ID from employees where salary > (select salary from employees where employees.EMPLOYEE_ID=104);
+
+Mohit
+select * from employees where salary > (select salary from employees where employee_id=104);
+
+
+
+Pragyan:
+select * from employees e where e.SALARY > (select emp.SALARY from employees emp where emp.EMPLOYEE_ID=104);
+
+
+
+Alokit
+ select * from employees where employees.SALARY > (select SALARY from employees where employees.EMPLOYEE_ID = 104);
+
+2. Select all the employees who have a salary greater than the average salary
+
+prathyusha:
+select * from employees where salary>(select avg(salary) from employees)
+
+Alokit
+select * from employees where employees.SALARY > (select avg(SALARY) from employees);
+
+Pragyan:
+select * from employees where salary > (select avg(salary) from employees);
+
+Mohit:
+select * from employees where salary > (select avg(salary) from employees);
+
+3. Get all the employees who have a salary greater than average salary of department 20
+Farooq
+select * from employees where salary > (select avg(salary) from employees where department_id = 20) ;
+
+prathyusha:
+select * from employees where salary>(select avg(salary) from employees where department_id=20)
+
+Alokit
+select * from employees where employees.SALARY > (select avg(SALARY) from employees where employees.DEPARTMENT_ID=20);
+
+
+Get all the employees who have got a salary greater than their respective dept's average salary
+
+Farooq 
+select * from employees where salary > (select avg(salary) from employees group by department_id ;
+
+alokit
+
+select * from employee where (salary,department_id) = any (select avg(salary),department_id from employees group by DEPARTMENT_ID);  
+
+
+
+Correlated subqueries:
+-- For each row of the outer table, the inner query will be executed
+-- Inner query cannot be executed on its own
+-- Inner query will be executed the number of rows in the outer table 
+select * from employee e1 where salary > ( select avg(salary) 
+from employees e2 where e2.department_id=e1.department_id)
+1st iteration :
+Select first row from employee table
+100, deptId = 90; salary : 24000
+Execute the inner query
+select avg(salary) from employees e2 where e2.department_id=e1.department_id -- return 19333
+
+2nd iteration:
+Select select row from employee table
+101, deptId = 90; salary : 17000
+Execute the inner query
+select avg(salary) from employees e2 where e2.department_id=e1.department_id -- return 19333
+17000 > 19333 -- no
+Record will not be added to result set
+
+Result set
+100
+
+1. Select all the department names where there are atleast one employee working:
+select * from departments where department_id in (select distinct(department_id) from employees where department_id is not null)
+
+2. Select all the department names where there are more than 5 employee working in them :
+
+Farooq
+select * from departments where department_id in (select department_id from employees group by department_id having count(*) > 5 )
+
+Amit
+select * from departments where department_id in (select department_id from employees group by `DEPARTMENT_ID` having count(*) >=5);
+
+Akash
+select departments.DEPARTMENT_ID from departments inner join employees on departments.DEPARTMENT_ID = employees.DEPARTMENT_ID group by departments.DEPARTMENT_ID HAVING count(*) > 5;
+
+prathyusha
+select * from departments where department_id in  (select department_id from employees group by department_id having count(*) >5)
+
+3. Select all the departments where there are no employees working:
+Farooq
+select * from departments where department_id NOT in (select distinct(department_id) from employees where department_id is not null);
+
+Amit:
+select * from departments where department_id NOT in (select distinct(department_id) from employees where department_id is not null);
+
+4. Get the employee details with the highest salary
+
+FArooq
+select * from employees where salary >= (select max(salary) from employees);
+
+
+
+Akash
+select * from employees where salary = (select max(salary) from employees);
+
+5. Get the employee details of person with the second highest salary
+
+
+Mohit:
+select * from employee where salary = (select max(salary) from employees where salary!=(select max(salary) from employees));
+
+Amit
+select * from employees where salary = (select max(salary) from employees where salary != (select max(salary) from employees));
+
+Satyajeet
+select * from employees where salary = (select max(salary) from employees where salary!=(select max(salary) from employees));
+
+
+Akash
+select * from employees where salary = (select salary from employees where salary < (select max(salary) from employees) order by salary DESC LIMIT 1 OFFSET 1) ;
+//Replace offset for nth highest salary
+
+select * from employees where salary = (select distinct(salary) from employees order by salary DESC LIMIT 1 OFFSET 1) ;
+//Optimized version
+
+Get the employee details of the employees who have got 5 highest salary
+
+select * from employees e1 where 4 = (select count(distinct e2.salary) from employees e2 where e2.salary > e1.salary )
+select * from employees where salary = (select salary from employees where salary < (select max(salary) from employees) order by salary DESC LIMIT 1 OFFSET 5) ;
+
+Dry run :
+
+select * from employees e1 where (select count(distinct salary) from employees e2 where e2.salary > e1.salary)=2
+
+
+
+6. Employees who are not managers
+
+
+select * from employees where department_id=10;
+// index on department_id
+
+create index emp_name_ix on employees (last_name, first_name);
+select * from employees where last_name ="whalen";
+select * from employees where first_name ="jennifer"; # not use the index
+select * from employees where last_name ="whalen" and first_name ="jennifer"; 
+
+None of the below queries index is used;
+select * from employees order by last_name;
+select * from employees order by last_name,first_name;
+select * from employees order by first_name,last_name;
+select * from employees order by first_name;
+
+Fetch 95% of records 
+select * from employees where department_id between 10 and 110;# not use 
+
+Execution plans:
+1. Table scan and filter
+2. Access the index on department_id field and fetch the corresponding records
+
+One winning plan; rejection plan(s)
+
+explain select * from employees where department_id between 10 and 20;# use 
+
+select * from employees where email="NKOCHHAR" and job_id ="AD_VP";
+// use email index 
+
+explain select * from employees where department_id=10 and job_id ="AD_VP";
+
+Hint a particular index :
+explain select * from employees use index(emp_job_ix) where department_id=10 and job_id ="AD_VP";
+
+Multiple indexes are used
+
+explain select * from employees where department_id between 10 and 50 order by job_id;
+
+Function 
+-- Stored routine 
+-- Single value
+-- Call it as a part of dml statement
+
+delimiter $$
+create function countOfEmpInDept(dept_id int)
+returns int
+reads sql data
+begin 
+	declare numberOfEmp int;
+  select count(*) into numberOfEmp from employees where department_id =dept_id;
+  return numberOfEmp;
+end $$
+delimiter ;
+
+select  countOfEmpInDept(30) ;
+
+# count of employees ina ll the departments
+
+select countOfEmpInDept(department_id),department_id from employees;
+
+select countOfEmpInDept(department_id),department_id from employees where countOfEmpInDept(department_id) > 10 group by department_id
+
+
+1. Create a function which is going to return the concatenated names
+---Farooq---
+delimiter $$
+create function concatNames(empid int)
+returns varchar(100)
+reads sql data
+begin 
+	declare empNames var(100);
+  	select firstName + " " + LastName into empNames from employees where employee_id = empid;
+  	return empNames;
+end $$
+delimiter ;
+
+select concatNames(501);
+select concatNames(employee_id) from employees;
+
+Satyajeet:
+delimiter $$
+create function concatNames(emp_id int)
+returns varchar
+reads sql data
+begin 
+  declare empName; 
+  select CONCAT(e.FIRST_NAME, e.LAST_NAME) into empName from employees e where e.EMPLOYEE_ID=emp_id;
+  return empName;
+end $$
+delimiter ;
+
+Akash:
+delimiter $$
+create function concatString(a varchar(20) , b varchar(20))
+returns varchar(20)
+reads sql data
+begin 
+	declare result varchar(20);
+  select CONCAT(a,b) INTO result;
+  return result;
+end $$
+delimiter;
+
+select concatString("akash ", "jain");
+
+Alokit:
+delimiter $$
+create function concateName(emp_id int)
+returns varchar(100)
+reads sql data
+begin 
+	declare name varchar(100);
+  select concat(first_name,last_name) into name from employees where employee_id =emp_id;
+  return name;
+end $$
+delimiter ;
+
+
+
+Mohit
+delimiter $$
+create function concatinated( firstname varchar(30),  lastname varchar(30))
+returns varchar(100)
+reads sql data
+begin
+	declare ename varchar(100);
+    select concat(firstname, lastname) into ename;
+	return ename;
+end $$
+delimiter ;
+
+
+select concatinated(first_name, last_name) from employees;
+
+
+
+2. Create a function which will return the number of years a particular employee 101, job_id= AC_ACCOUNT
+
+satyajeet:
+* delimiter $$
+alter function yoe(emp_id int, job_id int)
+returns int
+reads sql data
+begin 
+  declare yoe int; 
+  select DATEDIFF(j.END_DATE,j.START_DATE) into yoe from job_history j where j.EMPLOYEE_ID=emp_id and j.JOB_ID=job_id;
+  return yoe;
+end $$
+delimiter;
+
+
+Akash
+
+delimiter $$
+create function yearsWorkedFor(empId decimal(6,0))
+returns int
+reads sql data
+begin 
+	declare result int;
+    select SUM(timestampdiff(YEAR,START_DATE,END_DATE)) from job_history where EMPLOYEE_ID = empId INTO result;
+  return result;
+end $$
+delimiter;
+
+
+select yearsWorkedFor(101);
+
+delimiter $$
+create function yearsWorkedFor2(empId decimal(6,0) , jobId varchar(10))
+returns int
+reads sql data
+begin 
+	declare result int;
+    select timestampdiff(YEAR,START_DATE,END_DATE) from job_history where EMPLOYEE_ID = empId and JOB_ID = jobId INTO result;
+  return result;
+end $$
+delimiter;
+
+
+1. Can i have insert/ update/ delete as part of function -- no
+2. Can i perform multiple selects in the same function but returns only 1 value; -- yes 
+
+
+
+
+
+
+
+
+
+
+

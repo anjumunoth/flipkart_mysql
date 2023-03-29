@@ -1,0 +1,485 @@
+Limitations in functions:
+-- DDL queries cannot be performed
+-- Return a single value
+-- DML -- insert/update/delete not performed
+-- call the function as part of select statement
+
+Stored Procedures
+-- Introduced version 5.x 
+-- Return multiple values 
+-- Perform ddl  or dml operation 
+-- Call the procedure with call statement
+-- Call the procedure from server side with the procedure name and param list
+-- Procedure is going to be stored in mysql server
+-- Network traffic must lesser
+-- Multiple sql statements in a songle procedure
+-- Resuable and secured
+
+Parameters modes 
+in
+out
+inout
+
+in: pass the value from the procedure call to the procedure
+-- No modifications can be made to the in parameter in procedure
+
+out
+-- pass some value from the procedure to the procedure call
+-- equivalent to return values
+-- Surely make the changes to the out param
+
+inout
+-- pass some value
+-- make the modifications in the procedure
+-- get the modified changes as part of the proc call
+
+
+With a in param mode:
+
+delimiter $$
+create procedure numberOfEmployees (department_id int)
+begin
+	select count(*) as numberofEmp from employees e where e.department_id = department_id; 
+end $$
+delimiter ;
+
+call numberOfEmployees(20);
+
+Fetch the department name and number of employees working in them
+delimiter $$
+create procedure numberOfEmployeesWithDeptName (department_id int)
+begin
+	select department_name from departments d where d.department_id = department_id; 
+	select count(*) as numberofEmp from employees e where e.department_id = department_id; 
+end $$
+delimiter ;
+call numberOfEmployeesWithDeptName(20);
+
+
+
+
+Write a procedure which will display the job history of a particular employee
+
+Akash:
+
+delimiter $$
+create procedure jobHistory (empId int)
+begin
+	select * from job_history j where j.EMPLOYEE_ID = empId; 
+end $$
+delimiter ;
+
+call jobHistory(176);
+
+
+satyajeet:
+delimiter $$
+create procedure empJobHistory (emp_id int)
+begin 
+	select * from job_history j where j.employee_id = emp_id;
+end $$
+delimiter ;
+
+call empJobHistory(101)
+
+mansi:
+delimiter $$
+create procedure jobHistoryProcedure (empId int)
+begin
+	select * from job_history j where j.EMPLOYEE_ID = empId; 
+end $$
+delimiter ;
+
+call jobHistoryProcedure(176);
+
+Parth:
+delimiter $$
+create procedure displayJobHistory (emp int)
+begin
+	select * from job_history j where j.EMPLOYEE_ID = emp; 
+end $$ 
+delimiter ;
+call displayJobHistory(101)
+
+
+Out parameter :
+Return some value
+delimiter $$
+create procedure returnNumberOfEmployeesWithDeptName (department_id int,out countOfEmp int, out deptName varchar(30))
+begin
+	select department_name into deptName from departments d where d.department_id = department_id; 
+	select count(*) as numberofEmp into countOfEmp from employees e where e.department_id = department_id; 
+end $$
+delimiter ;
+
+call returnNumberOfEmployeesWithDeptName(20,@countOfEmployees ,@departmentName);
+select @countOfEmployees;
+select @departmentName;
+
+Return the number of jobs a particular employee has worked in
+
+Akash:
+
+delimiter $$
+create procedure getJobHistory (empId int, out historyCount int)
+begin
+	select count(*) into historyCount from job_history j where j.EMPLOYEE_ID = empId; 
+end $$
+delimiter ;
+
+call getJobHistory(176, @historyCount);
+
+select @historyCount;
+
+Satyajeet:
+delimiter $$
+create procedure totalJobs (emp_id int, out noOfJobs int)
+begin 
+	select count(*) into noOfJobs from job_history j where j.employee_id = emp_id;
+end $$
+delimiter ;
+
+call totalJobs(101, @countOfJobs);
+select @countOfJobs;
+
+
+Mohit
+delimiter $$
+create procedure get_job_history_count (emp_id int, out jobCount int)
+begin
+	select count(*) into jobCount from job_history where employee_id = emp_id; 
+end $$
+delimiter ;
+
+call get_job_history_count(101, @jobCount);
+select @jobCount
+
+Amit:
+delimiter $$
+create procedure empJobHistoryCount (emp_id int, out job_count int)
+begin
+	select count(*)  into job_count from `job_history` j where j.`EMPLOYEE_ID` = emp_id; 
+end $$
+delimiter ;
+call empJobHistoryCount(102,@job_count);
+select @job_count;
+
+Alokit
+delimiter $$
+create procedure returnNumberOfJobs (employee_id int,out jobCount int)
+begin
+	select count(*) as jobcount into jobCount from job_history j where j.EMPLOYEE_ID = employee_id ; 
+end $$
+delimiter ;
+
+call returnNumberOfJobs(101,@jobCount);
+select @jobCount;
+
+
+InOut mode 
+delimiter $$
+create procedure updateSalary (emp_id int,inout sal int,inout temp int)
+begin
+ 
+	if sal > 20000 then 
+  	set sal =sal +1000;
+  else
+  	set sal =sal +500;
+  end if;
+	update employees set salary =sal where employee_id =emp_id;
+  select salary into temp from employees where employee_id =emp_id;
+end $$
+delimiter ;
+
+set @sal=17000;
+call updateSalary(101,@sal,@newsal);
+select @sal;
+select @newsal;
+
+Given a employee id, fetch the data for the employee id 103  and insert into the job history and return the job start date
+Farooq ----
+Out
+
+delimiter $$
+create procedure updateJobHistory (emp_id int,out st_date date)
+begin
+ 	declare dept_id int;
+	declare j_id varchar(10);
+  select  job_id, department_id,hire_date into j_id,dept_id,st_date from employees where employee_id = emp_id;
+	insert into job_history(employee_id,job_id,department_id,start_date,end_date) values (emp_id,j_id,dept_id,st_date,current_date());
+	
+end $$
+delimiter ;
+call updateJobHistory(103,@start_date);
+select @start_date;
+
+
+
+declare emp_id int;
+declare start_date date;
+select employee_id,hire_date into emp_id,start_date
+
+
+Mohit:
+
+delimiter $$
+create procedure updateSalary4 (emp_id int, out j_id varchar(30), out dep_id int, out start_date date)
+begin
+        
+        select job_id, department_id , hire_date into j_id, dep_id, start_date from employees where employee_id=emp_id;
+		insert into job_history values(emp_id,start_date, current_date(),j_id,dep_id);
+end $$
+delimiter ;
+
+
+call updateSalary4(103,@j_id, @dep_id,@start_date);
+select @j_id;
+select @dep_id;
+select @start_date;
+
+
+
+Akash:
+
+delimiter $$
+create procedure addCurrentJobToHistory3 (emp_id int,out start_date date)
+begin
+   declare empHiringDate date;
+   declare empJobId int;
+   declare empDeptId int;
+
+   select HIRE_DATE, JOB_ID , DEPARTMENT_ID into empHiringDate, empJobId ,empDeptId  from employees where employees.EMPLOYEE_ID = emp_id;
+   	 
+   insert into job_history(EMPLOYEE_ID,START_DATE,END_DATE,JOB_ID,DEPARTMENT_ID) values (emp_id , empHiringDate, NOW(), empJobId, empDeptId);
+   set start_date = empHiringDate;   
+
+end $$
+delimiter ;
+
+call addCurrentJobToHistory3(100, @start_date);
+select @start_date;
+
+
+Satyajeet:
+delimiter $$
+create procedure updateJobHistory (emp_id int, out startDate date)
+begin
+    declare empId int;
+    declare jobId varchar;
+    declare departmentId varchar;    
+	select e.employee_Id, e.hire_date, e.job_id, e.department_id into empId,startDate,jobId,departmentId from employees e where employee_id = emp_id;
+	insert into job_history(empId, startDate, CURDATE(), jobId, departmentId);
+end $$
+delimiter ;
+
+Alokit
+delimiter $$
+create procedure insert_into_job_history (employee_id int,out st_date varchar(30))
+begin
+	insert into job_history(employee_id,start_date,job_id,department_id) select employee_id,hire_date,job_id,department_id from employees e where e.employee_id = employee_id;
+    	update job_history set end_date =current_date() where employee_id =emp_id;
+
+    select start_date into st_date from job_history where EMPLOYEE_ID = EMPLOYEE_ID;
+end $$
+delimiter ;
+
+call insert_into_job_history(103,@start_date);
+
+select @start_date;
+
+
+Replication:
+Enable binary logging on source
+Any writes in the source, a log(event ) will be created in the source binary file
+replica copy from the source log file ; 
+-- 2 information requires
+	-- source binary file
+  -- source binary file position from where it has to copy
+Synchronisation :
+All the writes -- source/ master/primary
+Reads -- source and replicas
+2 types
+asynchronous
+	-- writes to the source --> source will perform the writes on its data--> create a log in its repective binary log --> success notification to the client --> replicas will asynchrously sync with the source
+  Advantages
+  	--faster;
+  Disadvantages
+  	-- client has got the success;Source shutdowns;none of the replicas have synced; data loss will happen; 
+    -- eventual consistency
+semi - asynchronous
+ -- writes comes to the source --> source will perform the writes on its data--> create a log in its repective binary log --> atleast one replica to sync --> notification from the replica that it has synced -->success notification to the client --> other replicas will asynchrously sync with the source
+Advantages
+  -- data loss can be minimised
+  -- probability of reading stale data is minimised
+  Disadvantages
+  	-- slower
+  	-- eventual consistency
+    
+
+Scenario 1 :
+client given the write to source; source has completed the write on its data; create a log in the binary log file; source shutdowns --> client will get failure notification
+
+Scenario 2:
+client given the write to source; source has completed the write on its data; create a log in the binary log file;replica has also synced --> success notification has been sent to the client--> source shutdowns 
+No data loss;
+Replica which has the write operation
+
+Synchronous replication 
+all the slaves have to send write completion receipt -- success to the client
+-- Scenario -- writes have happened and client gets a failure;
+writes has happened on source; write is failing on a particular replica  -- client -- failure notification
+replica -- failure receipt to the source; on failure receipt; rollback;
+Advantages
+-- Strong consistency
+-- data loss is very minimum
+Disadvantages
+-- writes will become slower/ expensive
+-- 
+
+Replication formats
+-- Statement-based -- propagation of sql statement from master to slave
+-- row based -- changes to the individual rows are propagated from master to slave
+-- mixed based - combination of statement based(default) and row based(configure)
+
+With respect to cost :statement is cheaper
+
+statement based
+update tablename set salary=1000 ;
+affect 1000 rows
+row based
+1000 rows will be logged in binary log
+
+Types of replication
+Master - slave replication
+Master - master replication
+group replication
+
+Master-slave replication
+-- Only 1 master allowed
+-- Multiple replicas
+-- Unidirectional flow of data
+Advantages
+-- faster (reads source and replicas) when compared to without replication
+-- Load balancing of reads 
+-- Create reports or analytics on the slaves 
+Disadvantages
+-- Single point of failure ; writes will start falure
+-- Manual promotion of replica to source
+-- Data loss in case of asynchronous replication
+-- Writes cannot be scaled up
+
+Master - master replication
+-- Minimum 2 masters 
+-- Multiple replicas
+-- replication between the masters is asynchronous
+-- Between the masters -- bidirectional
+Advantages
+-- Scale up the writes (more number of master)
+-- Semi automatic failover (even if one master fails, there are other masters which can handle the writes)
+Disadvantages
+-- Concurrency of write 
+-- No Complete automatic failover
+-- Asynchronous replication -- data loss;
+
+
+Why replication ?
+-- High availability
+-- Scale up or scale down
+-- Data backups/security
+-- Analytics from the replicas
+-- data distribution
+Disadvantages
+-- More maintanence overhead
+-- Eventual Consistency or strong consistency (difficult)
+-- Failover complex ; manual
+-- slaves can lag from the source
+-- Loss of data can be possible
+
+mysqld --install MySQLDEV1 –-defaults-file="C:\MySQLDev1\MyDev.ini"
+
+CHANGE MASTER TO
+      MASTER_HOST='localhost',
+        MASTER_USER='repl1',
+        MASTER_PASSWORD='root',
+        MASTER_LOG_FILE='DESKTOP-OMKIEM8-bin.000067',
+        MASTER_PORT=3307,
+        MASTER_LOG_POS=7023;
+
+
+Locking in mysql
+
+lock tables tablename [read/write]
+
+unlock tables;
+
+Read locks;
+Shared locks --Multiple sessions can have read locks on the same table
+-- Read the table on which lock has been created in that session
+-- Reading other tables will not be allowed
+In another session:
+-- Writes will be waiting for the locks to be relaesed
+-- Reads to other tables will be allowed
+
+Write locks
+Exclusive locks --Multiple sessions cannot have write locks on the same table
+-- Read and write to the table;
+-- Read/write the table on which lock has been created in that session
+-- Reading other tables will not be allowed
+In another session:
+-- Writes/reads will be waiting for the locks to be relaesed
+
+read Lock on same table in multiple sessions be created -- yes
+write Lock on same table in multiple sessions be created -- no
+
+Internal locks;
+
+Cross tables and external locking
+
+Created a write lock on books -- writes on other tables; -- no
+
+Functions and procedures -- explicily called
+Triggers:
+-- Invoked implicitly
+-- Validations before/after the operations
+-- Based on write perform custom operations
+-- Multiple triggers
+-- Multiple triggers for the same write operation
+-- Create at the table level
+-- Write operation(DML) insert/update/delete
+-- Before and after triggers
+-- Before trigger -- Trigger will be executed before the write operation
+old values and new values
+-- After trigger --  Trigger will be executed after the write operation
+new values
+ 
+delimiter $$ 
+create trigger afterDeleteEmployees after delete on employees for each row
+begin
+	delete from job_history where employee_id =old.employee_id;
+  
+end $$
+delimiter ;
+
+insert old -- no; new -- yes;
+update old -- yes; new --yes
+delete old -- yes; new -- no
+
+
+delimiter $$ 
+create trigger beforeUpdateEmployees before update on employees for each row
+begin
+	declare errorMessage varchar(255);
+  set errorMessage =concat("Salary should be greater than 5000 but the salary provided in the query is ",new.salary);;
+  if (new.salary <5000) then 
+  	signal sqlstate '45000'
+    set message_text=errorMessage;
+  end if;
+  
+end $$
+delimiter ;
+
+
+
+
+
+
